@@ -8,22 +8,22 @@ public class ClientePrueba {
     private static final String BASE_URL =
             "http://localhost:8080/contactos";
     public static void main(String[] args) {
-// Crea un nuevo contacto para agregar
+
         Contacto nuevoContacto = new Contacto("Juan", "987654321");
-// Ejecuta el cliente de prueba
+
         ClientePrueba cliente = new ClientePrueba();
         cliente.realizarPruebas(nuevoContacto);
     }
     public void realizarPruebas(Contacto nuevoContacto) {
-// Agrega un nuevo contacto
+
         nuevoContacto = agregarContacto(nuevoContacto);
         System.out.println("Contacto agregado: " + nuevoContacto);
-// Obtiene todos los contactos
+
         listarContactos();
-// Obtiene un contacto por ID
+
         obtenerContactoPorId(nuevoContacto.getId());
         eliminarContacto(nuevoContacto.getId());
-// Obtiene todos los contactos después de la eliminación
+
         listarContactos();
 
         Contacto contacto = new Contacto("Abzael Rodriguez","637161819");
