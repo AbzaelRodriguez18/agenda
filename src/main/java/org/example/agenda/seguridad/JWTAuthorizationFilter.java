@@ -1,10 +1,6 @@
 package org.example.agenda.seguridad;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.*;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,7 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.List; // Import correcto
 import java.util.stream.Collectors;
 
 import static org.example.agenda.seguridad.Constans.*;
@@ -24,10 +20,9 @@ import static org.example.agenda.seguridad.Constans.*;
 @Component
 public class JWTAuthorizationFilter extends OncePerRequestFilter {
 
-    private Claims setSigningKey(HttpServletRequest request) {
-        String jwtToken = request.
-                getHeader(HEADER_AUTHORIZACION_KEY).
-                replace(TOKEN_BEARER_PREFIX, "");
+    private Claims getClaims(HttpServletRequest request) {
+        String jwtToken = request.getHeader(HEADER_AUTHORIZACION_KEY)
+                .replace(TOKEN_BEARER_PREFIX, "").trim(); // .trim() para evitar espacios sueltos
 
         return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey(SUPER_SECRET_KEY))
@@ -37,27 +32,32 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
     }
 
     private void setAuthentication(Claims claims) {
+        // Casteo seguro de la lista de autoridades
         List<String> authorities = (List<String>) claims.get("authorities");
 
-        UsernamePasswordAuthenticationToken auth =
-                new UsernamePasswordAuthenticationToken(claims.getSubject(), null,
-                        authorities.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList()));
+        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+                claims.getSubject(),
+                null,
+                authorities.stream()
+                        .map(SimpleGrantedAuthority::new)
+                        .collect(Collectors.toList())
+        );
 
         SecurityContextHolder.getContext().setAuthentication(auth);
     }
 
-    private boolean isJWTValid(HttpServletRequest request, HttpServletResponse res) {
+    private boolean isJWTValid(HttpServletRequest request) {
         String authenticationHeader = request.getHeader(HEADER_AUTHORIZACION_KEY);
-        if (authenticationHeader == null || !authenticationHeader.startsWith(TOKEN_BEARER_PREFIX))
-            return false;
-        return true;
+        return authenticationHeader != null && authenticationHeader.startsWith(TOKEN_BEARER_PREFIX);
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
         try {
-            if (isJWTValid(request, response)) {
-                Claims claims = setSigningKey(request);
+            if (isJWTValid(request)) {
+                Claims claims = getClaims(request);
                 if (claims.get("authorities") != null) {
                     setAuthentication(claims);
                 } else {
@@ -69,8 +69,7 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
         } catch (ExpiredJwtException | UnsupportedJwtException | MalformedJwtException e) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            ((HttpServletResponse) response).sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
-            return;
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Token inválido o expirado: " + e.getMessage());
         }
     }
 }

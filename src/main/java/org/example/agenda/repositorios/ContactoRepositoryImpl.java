@@ -10,10 +10,11 @@ import java.util.Map;
 
 @Repository
 public class ContactoRepositoryImpl implements ContactoRepository {
+
     private final Map<Long, Contacto> contactos = new HashMap<>();
+
     private Long idSecuencia = 1L;
     public ContactoRepositoryImpl() {
-// Inicializa el mapa con un contacto predeterminado
         Contacto contactoInicial = new Contacto("Aitor", "123456789");
         contactoInicial.setId(idSecuencia++);
         contactos.put(contactoInicial.getId(), contactoInicial);
@@ -36,6 +37,7 @@ public class ContactoRepositoryImpl implements ContactoRepository {
     }
     @Override
     public void eliminar(Long id) {
+        contactos.remove(id);
     }
 
     @Override

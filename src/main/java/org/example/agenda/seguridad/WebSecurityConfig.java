@@ -13,21 +13,21 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @EnableWebSecurity
 @Configuration
-public class WebSecurityConfig {
-
+class WebSecurityConfig{
     @Autowired
     JWTAuthorizationFilter jwtAuthorizationFilter;
-
     @Bean
-    public SecurityFilterChain configure(HttpSecurity http) throws Exception {
+    public SecurityFilterChain configure(HttpSecurity http) throws
+            Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(authz -> authz
-                        .requestMatchers(HttpMethod.POST, Constans.LOGIN_URL).permitAll()
-                        .requestMatchers(HttpMethod.DELETE, "/contactos/**").hasAuthority("ROLE_" + Rol.ADMIN)
+                .authorizeHttpRequests( authz -> authz
+                        .requestMatchers(HttpMethod.POST,Constans.LOGIN_URL).permitAll()
+                        .requestMatchers(HttpMethod.DELETE,
+                                "/contactos/**").hasAuthority("ROLE_" + Rol.ADMIN)
                         .anyRequest().authenticated())
-                .addFilterAfter(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class);
-
+                .addFilterAfter(jwtAuthorizationFilter,
+                        UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 }
