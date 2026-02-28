@@ -16,6 +16,8 @@ public class UsuarioRepository {
                 PasswordEncryptor.encrypt("1234"), Rol.ADMIN));
         usuarios.add(new Usuario("alicia",
                 PasswordEncryptor.encrypt("1111"), Rol.USER));
+        usuarios.add(new Usuario("pedro",
+                PasswordEncryptor.encrypt("2222"), Rol.READER));
         return usuarios;
     }
 }
